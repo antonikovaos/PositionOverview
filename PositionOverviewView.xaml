@@ -1,0 +1,291 @@
+﻿<DockPanel 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extentions="clr-namespace:LS.Client.CIL.Extentions;assembly=LS.Client.CIL"
+    xmlns:forms="clr-namespace:LS.Client.SO.ViewModels.Forms"
+    xmlns:dxr="http://schemas.devexpress.com/winfx/2008/xaml/ribbon"
+    xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+    xmlns:converters="clr-namespace:LS.Client.SO.Converters"
+    xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
+    xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+    xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
+    xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+    xmlns:behaviors="clr-namespace:LS.Client.CIL.Behaviors;assembly=LS.Client.CIL"
+    xmlns:controls="clr-namespace:LS.Client.CIL.Controls;assembly=LS.Client.CIL"
+    xmlns:themes="http://schemas.devexpress.com/winfx/2008/xaml/core/themekeys"
+    x:Class="LS.Client.SO.Views.PositionOverviewView"
+    mc:Ignorable="d"
+    Loaded="{DXEvent Loaded()}" 
+    DataContext="{extentions:Container {x:Type forms:PositionOverviewVM}}"
+    d:DesignHeight="300" d:DesignWidth="300">
+    
+    <DockPanel.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/LS.Client.CIL;component/Resources/LayoutDictionary.xaml"/>
+                <ResourceDictionary Source="../Resources/CardFormsTemplates.xaml"/>
+                <ResourceDictionary Source="../Resources/GridDictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <DataTemplate x:Key="CurrencyTemplate">
+                <dxe:SpinEdit x:Name="PART_Editor" 
+            		Mask="C2" 
+            		MaskType="None"
+            		MaskUseAsDisplayFormat="True" FontWeight="Bold"
+            		MaskCulture="{Binding RowData.Row.Culture, Converter={converters:CurrencyToCultureConverter}}"/>
+            </DataTemplate>
+        </ResourceDictionary>
+    </DockPanel.Resources>
+    
+    <dxr:RibbonControl DockPanel.Dock="Top">
+        <dxr:RibbonControl.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="pack://application:,,,/LS.Client.CIL;component/Resources/RibbonDictionary.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </dxr:RibbonControl.Resources>
+
+        <dxr:RibbonDefaultPageCategory>
+            <dxr:RibbonPage>
+                <dxr:RibbonPageGroup Caption="">
+                    <dxb:BarButtonItem Content="Анкета заказа"
+						IsEnabled="{Binding AllowEditItem}"
+						Command="{Binding GoToOrderCommand}"
+						Glyph="{dx:DXImage Image=Preview_16x16.png}" 
+						LargeGlyph="{dx:DXImage Image=Preview_32x32.png}"/>
+                </dxr:RibbonPageGroup>
+                <dxr:RibbonPageGroup Caption="З а к а з ч и к" x:Name="PositionsOverviewCustomerFilter">
+                    <dxb:BarStaticItem ContentTemplate="{StaticResource CustomerFilterDataTemplate}"/>
+                </dxr:RibbonPageGroup>
+
+                <dxr:RibbonPageGroup Caption="Д о г о в о р / з а к а з" x:Name="PositionsOverviewFilter">
+                    <dxb:BarStaticItem ContentTemplate="{StaticResource OrderOverviewDataTemplate}"/>
+                </dxr:RibbonPageGroup>
+                <dxr:RibbonPageGroup Caption="В ы б о р   и з д е л и я" x:Name="PositionsOverviewItemFilter">
+                    <dxb:BarStaticItem ContentTemplate="{StaticResource ItemFilterDataTemplate}"/>
+                </dxr:RibbonPageGroup>
+
+                <dxr:RibbonPageGroup Caption="Т и п  и з д е л и я" x:Name="OrderOverviewItemTypeFilter"
+                                     DataContext="{extentions:Container {x:Type forms:OrderOverviewVM}}">
+                    <dxb:BarStaticItem ContentTemplate="{StaticResource ItemTypeFilterTemplate}" />
+                </dxr:RibbonPageGroup>
+
+                <dxr:RibbonPageGroup Caption="П о з и ц и я   з а к а з а" x:Name="PositionsOverviewDateStatusFilter">
+                    <dxb:BarStaticItem ContentTemplate="{StaticResource PositionsOverviewDataTemplate}"/>
+
+                    <dxb:BarButtonItem Command="{Binding ApprovePositionCommand}" 
+						Content="Утвердить" Hint="Утвердить текущую позицию" 
+						Glyph="{dx:DXImage Image=CheckBox_32x32.png}" GlyphSize="Large" RibbonStyle="Large" 
+						IsEnabled="{Binding ActiveApproveButton, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                    <dxb:BarButtonItem Command="{Binding CancelPositionCommand}" 
+                                       Content="Отменить" Hint="Отменить текущую позицию" 
+                                       Glyph="{dx:DXImage Image=Cancel_32x32.png}" 
+                                       GlyphSize="Large" RibbonStyle="Large" 
+                                       IsEnabled="{Binding ActiveCancelButton, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                </dxr:RibbonPageGroup>
+                <dxr:RibbonPageGroup>
+                    <dxb:BarCheckItem Content="Диаграмма обеспеченности" Hint="Показать обеспечивающие ПЗ на диаграмме" 
+                                      IsChecked="{Binding ShowDiagram}" RibbonStyle="Large"
+                                      Glyph="{dx:DXImage Image=ClusteredBar_16x16.png}"
+                                      LargeGlyph="{dx:DXImage Image=ClusteredBar_32x32.png}" />
+                    <dxb:BarCheckItem Content="Обеспеченность" Hint="Показать обеспечивающие ПЗ на диаграмме" 
+                                      IsChecked="{Binding ShowTabl}" RibbonStyle="Large"
+                                      Glyph="{dx:DXImage Image=FreezeFirstColumn_16x16.png}"
+                                      LargeGlyph="{dx:DXImage Image=FreezeFirstColumn_32x32.png}" />  
+                </dxr:RibbonPageGroup>
+
+            </dxr:RibbonPage>
+        </dxr:RibbonDefaultPageCategory>
+    </dxr:RibbonControl>
+
+    <dxlc:DockLayoutControl Margin="0" Padding="0" Background="White">       
+
+        <dxlc:GroupBox Height="100" dxlc:DockLayoutControl.Dock="Bottom"
+                       dxlc:DockLayoutControl.AllowVerticalSizing="True" 
+                       Header="Диаграмма обеспеченности"
+                       Visibility="{Binding ShowDiagram, Converter={dxmvvm:BooleanToVisibilityConverter}}">
+            <controls:ReqDiagram />
+        </dxlc:GroupBox>
+
+        <dxlc:GroupBox Height="100" dxlc:DockLayoutControl.Dock="Bottom"
+                       dxlc:DockLayoutControl.AllowVerticalSizing="True"
+                       Header="Обеспеченность"
+                       Visibility="{Binding ShowTabl, 
+                                            Converter={dxmvvm:BooleanToVisibilityConverter}}">
+            <dxlc:GroupBox.Resources>
+                <Style TargetType="{x:Type dxg:GridColumn}">
+                    <Setter Property="FilterPopupMode" Value="CheckedList"/>
+                </Style>
+            </dxlc:GroupBox.Resources>
+            <dxg:GridControl ItemsSource="{Binding ReqOverview}"
+                            SelectedItem="{Binding SelectedReq}"
+                             EnableSmartColumnsGeneration="True"
+                             x:Name="ReqOverview">
+                <dxg:GridControl.View>
+                    <dxg:TableView AllowPerPixelScrolling="True" 
+                                   AllowEditing="False"
+                                   ShowGroupPanel="False">                      
+                    </dxg:TableView>
+                </dxg:GridControl.View>
+                <dxmvvm:Interaction.Behaviors>
+                    <behaviors:KeepLayoutBehavior Name="SOReqOverview"
+                                                  Desc="{extentions:Resource 'FormReqOverviewHeader'}"/>
+                    <behaviors:DxGridContextEditorBehavior />
+                </dxmvvm:Interaction.Behaviors>
+                <dxg:GridColumn FieldName="OrdNr" Header="№ ПЗ"/>
+                <dxg:GridColumn FieldName="Art" Header="Артикул"/>
+                <dxg:GridColumn FieldName="Name" Header="Название"/>
+                <dxg:GridColumn FieldName="Descr" Header="Описание"/>
+                <dxg:GridColumn FieldName="PlanBeg" Header="Начало план."/>
+                <dxg:GridColumn FieldName="PlanEnd" Header="Завершение план."/>
+                <dxg:GridColumn FieldName="Qty" Header="План"/>              
+                <dxg:GridColumn FieldName="Prio" Header="Приоритет(%)">                   
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="Rate" Header="Готовность(%)"/>
+            </dxg:GridControl>
+        </dxlc:GroupBox>
+        <dxlc:GroupBox Header="Позиции заказа" 
+                       dxlc:DockLayoutControl.Dock="Client"
+                       dxlc:DockLayoutControl.AllowVerticalSizing="True">
+            <dxlc:GroupBox.Resources>
+                <Style TargetType="{x:Type dxg:GridColumn}">
+                    <Setter Property="FilterPopupMode" Value="CheckedList"/>
+                </Style>
+            </dxlc:GroupBox.Resources>
+            <dxg:GridControl
+                ItemsSource="{Binding PositionsOverview}"
+                ColumnsSource="{Binding PositionColumns}"
+                SelectedItem="{Binding SelectedPosition}"
+                EnableSmartColumnsGeneration="True"
+                SelectionMode="Row">
+                <dxmvvm:Interaction.Behaviors>
+                    <behaviors:DynamicKeepLayoutBehavior Name="PositionsOverview" Desc="{extentions:Resource 'FormPositionsOverviewHeader'}"/>
+                </dxmvvm:Interaction.Behaviors>
+                <dxg:GridControl.View>
+                    <dxg:TableView AllowEditing="False" ShowGroupPanel="False" 
+                                   ShowTotalSummary="True" 
+                                   AllowPerPixelScrolling="True">
+                        <dxg:TableView.RowStyle>
+                            <Style TargetType="{x:Type dxg:RowControl}">
+                                <Setter Property="Background" 
+                                        Value="{Binding Path=Row, Converter={StaticResource BackgraundColorConverter}}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                                        <Setter Property="Background" Value="{Binding Path=Row, Converter={StaticResource BackgraundColorConverter}, ConverterParameter=true}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </dxg:TableView.RowStyle>
+                    </dxg:TableView>
+                </dxg:GridControl.View>
+            </dxg:GridControl>
+            <!--<dxg:GridControl ItemsSource="{Binding PositionsOverview}"
+                             SelectedItem="{Binding SelectedPosition}"                             
+                             EnableSmartColumnsGeneration="True"
+                             x:Name="PositionsOverview"
+                             SelectionMode="Row">
+                <dxg:GridControl.View>
+                    <dxg:TableView AllowPerPixelScrolling="True" 
+                                   AllowEditing="False"
+                                   ShowGroupPanel="False" NavigationStyle="Row">
+                        <dxg:TableView.RowStyle>
+                            <Style TargetType="{x:Type dxg:RowControl}">
+                                <Setter Property="Background" 
+                                        Value="{Binding Path=Row, Converter={StaticResource BackgraundColorConverter}}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                                        <Setter Property="Background" Value="LightCyan"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </dxg:TableView.RowStyle>
+                    </dxg:TableView>
+                </dxg:GridControl.View>
+                <dxmvvm:Interaction.Behaviors>
+                    <behaviors:KeepLayoutBehavior Name="SOPositionsOverview" 
+                                                  Desc="{extentions:Resource 'FormOPositionOverviewHeader'}"/>
+                    <behaviors:DxGridContextEditorBehavior/>
+                </dxmvvm:Interaction.Behaviors>                
+                <dxg:GridColumn FieldName="pPosNr" Header="Позиция"  Width="40"/>
+                <dxg:GridColumn FieldName="PositionStatusName" Header="Статус позиции"/>
+                <dxg:GridColumn FieldName="Name" Header="Заказчик"/>
+                <dxg:GridColumn FieldName="Code" Header="Код заказчика"/>
+                <dxg:GridColumn FieldName="zCode" Header="№ договора"/>
+                <dxg:GridColumn FieldName="dCode" Header="№ заказа"/>
+                <dxg:GridColumn FieldName="dPlanDate" Header="Дата заказа"/>
+                <dxg:GridColumn FieldName="aArt" Header="Артикул"/>
+                <dxg:GridColumn FieldName="aName" Header="Название"/>
+                <dxg:GridColumn FieldName="aDescr" Header="Описание"/>               
+                <dxg:GridColumn FieldName="Qty" Header="Кол-во"/>
+                <dxg:GridColumn FieldName="Uom.Name" Header="Е.и."/>
+                <dxg:GridColumn FieldName="Price" Header="Цена за ед.">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" Mask="c2" 
+                                              MaskCulture="{Binding Order.Currency.Culture}"
+                                              DisplayFormat="c2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>              
+                <dxg:GridColumn FieldName="PricePos" Header="Цена позиции">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" Mask="c2" 
+                                              MaskCulture="{Binding Order.Currency.Culture}"
+                                              DisplayFormat="c2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="PricePosWithNds" Header="Цена позиции с учетом НДС">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" Mask="c2" 
+                                              MaskCulture="{Binding Order.Currency.Culture}"
+                                              DisplayFormat="c2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="curCode" Header="Валюта"/>
+                <dxg:GridColumn FieldName="zPlanDate" Header="Дата договора"/>
+                <dxg:GridColumn FieldName="DocContractType.Name" Header="Тип договора"/>
+                <dxg:GridColumn FieldName="zStatus.Name" Header="Статус договора"/>
+                <dxg:GridColumn FieldName="OrderStatus.Name" Header="Тип заказа"/>
+                <dxg:GridColumn FieldName="Status.Name" Header="Статус заказа"/>
+                <dxg:GridColumn FieldName="CustomerGroup.Name" Header="Группа"/>
+                <dxg:GridColumn FieldName="Region" Header="Регион"/>
+                <dxg:GridColumn FieldName="CustomerStatusName.Name" Header="Статус заказчика"/>
+                <dxg:GridColumn FieldName="Class.Name" Header="Класс изделия"/>                
+                <dxg:GridColumn FieldName="Group.Name" Header="Группа"/>
+                <dxg:GridColumn FieldName="Type.Name" Header="Тип изделия"/>
+                <dxg:GridColumn FieldName="aStatus.Name" Header="Статус изделия"/>                
+                <dxg:GridColumn FieldName="DiscontReb" Header="Скидки/наценки (%)"/>
+                <dxg:GridColumn FieldName="SumDiscontReb" Header="Сумма скидок/наценок">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" Mask="c2" 
+                                              MaskCulture="{Binding Order.Currency.Culture}"
+                                              DisplayFormat="c2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>               
+                <dxg:GridColumn FieldName="PricePosWithDiscontReb" 
+                                Header="Цена позиции с учетом скидок/наценок">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" Mask="c2" 
+                                              MaskCulture="{Binding Order.Currency.Culture}"
+                                              DisplayFormat="c2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>                
+                <dxg:GridColumn FieldName="Nds" Header="НДС %"/>
+                <dxg:GridColumn FieldName="SumNds" Header="Сумма НДС">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" Mask="c2"
+                                              MaskCulture="{Binding Order.Currency.Culture}"
+                                              DisplayFormat="c2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="CreatedOn" Header=" Дата факт."/>
+                <dxg:GridColumn FieldName="PlanDate" Header="Дата план."/>                
+                <dxg:GridColumn FieldName="ShipDate" Header="Дата отгрузки"/>
+                <dxg:GridColumn FieldName="ShipQty" Header="Отгружено"/>
+                <dxg:GridColumn FieldName="ShipmentTypeName.Name" Header="Условия поставки"/>
+                <dxg:GridColumn FieldName="PaymentTypeName.Name" Header="Условия оплаты"/>
+            </dxg:GridControl>-->
+        </dxlc:GroupBox>
+    </dxlc:DockLayoutControl>
+</DockPanel>
